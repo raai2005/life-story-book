@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "258969253928",
+    "project_id": "life-storybook-megha",
+    "storage_bucket": "life-storybook-megha.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258969253928:android:a343b7148d6b4956f25d1d",
+        "android_client_info": {
+          "package_name": "com.example.lifestorybook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVY5pqlvStJslHpzsbddSY3cyCx4XXey8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

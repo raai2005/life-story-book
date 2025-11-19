@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'signup_screen.dart';
-import 'home_screen.dart';
+import 'dashboard_screen.dart';
+import '../utils/session_manager.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -32,14 +33,17 @@ class _LoginScreenState extends State<LoginScreen> {
       // Simulate login process
       await Future.delayed(const Duration(seconds: 2));
 
+      // Save login session
+      await SessionManager.saveLoginSession();
+
       setState(() {
         _isLoading = false;
       });
 
-      // Navigate to home screen
+      // Navigate to dashboard
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
       }
     }

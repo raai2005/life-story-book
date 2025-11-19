@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
+import '../utils/session_manager.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({Key? key}) : super(key: key);
+  const SignupScreen({super.key});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -48,6 +49,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
       // Simulate signup process
       await Future.delayed(const Duration(seconds: 2));
+
+      // Save login session for new user
+      await SessionManager.saveLoginSession();
 
       setState(() {
         _isLoading = false;

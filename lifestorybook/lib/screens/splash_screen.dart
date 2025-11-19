@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'login_screen.dart';
+import 'dashboard_screen.dart';
+import '../utils/session_manager.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -31,11 +33,18 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    // Navigate to login screen after 3 seconds
-    Timer(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
+    // Check session and navigate accordingly
+    Timer(const Duration(seconds: 3), () async {
+      final shouldLogin = await SessionManager.shouldShowLogin();
+
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) =>
+                shouldLogin ? const LoginScreen() : const DashboardScreen(),
+          ),
+        );
+      }
     });
   }
 
