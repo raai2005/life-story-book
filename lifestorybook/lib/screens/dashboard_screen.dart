@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'profile_screen.dart';
+import 'new_chapter_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -9,8 +13,19 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // Chapters data - will be populated from database
-  final List<Map<String, dynamic>> chapters = [];
+  int _totalChapters = 0;
+  int _totalWords = 0;
+
+  Stream<QuerySnapshot> _getChaptersStream() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const Stream.empty();
+    
+    return FirebaseFirestore.instance
+        .collection('chapters')
+        .where('userId', isEqualTo: user.uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,76 +55,112 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Welcome back header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(25),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [const Color(0xFF16213E), const Color(0xFF1A1A2E)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _getChaptersStream(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error loading chapters: ${snapshot.error}',
+                style: const TextStyle(color: Colors.red),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Welcome Back! 👋',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 0.8,
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF6C63FF)),
+            );
+          }
+
+          final chapters = snapshot.data?.docs ?? [];
+          
+          // Calculate totals
+          _totalChapters = chapters.length;
+          _totalWords = 0;
+          for (var doc in chapters) {
+            final data = doc.data() as Map<String, dynamic>;
+            _totalWords += (data['wordCount'] as num?)?.toInt() ?? 0;
+          }
+
+          return SafeArea(
+            child: Column(
+              children: [
+                // Welcome back header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(25),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [const Color(0xFF16213E), const Color(0xFF1A1A2E)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Continue writing your life story',
-                    style: TextStyle(fontSize: 16, color: Color(0xFF9E9E9E)),
-                  ),
-                  const SizedBox(height: 20),
-                  // Stats row
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildStatCard(
-                        'Chapters',
-                        chapters.length.toString(),
-                        Icons.book,
+                      const Text(
+                        'Welcome Back! 👋',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.8,
+                        ),
                       ),
-                      const SizedBox(width: 15),
-                      _buildStatCard(
-                        'Words',
-                        _getTotalWords().toString(),
-                        Icons.text_fields,
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Continue writing your life story',
+                        style: TextStyle(fontSize: 16, color: Color(0xFF9E9E9E)),
+                      ),
+                      const SizedBox(height: 20),
+                      // Stats row
+                      Row(
+                        children: [
+                          _buildStatCard(
+                            'Chapters',
+                            _totalChapters.toString(),
+                            Icons.book,
+                          ),
+                          const SizedBox(width: 15),
+                          _buildStatCard(
+                            'Words',
+                            _totalWords.toString(),
+                            Icons.text_fields,
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-            // Chapters list
-            Expanded(
-              child: chapters.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: chapters.length,
-                      itemBuilder: (context, index) {
-                        return _buildChapterCard(chapters[index], index);
-                      },
-                    ),
+                // Chapters list
+                Expanded(
+                  child: chapters.isEmpty
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(20),
+                          itemCount: chapters.length,
+                          itemBuilder: (context, index) {
+                            final doc = chapters[index];
+                            final data = doc.data() as Map<String, dynamic>;
+                            data['id'] = doc.id;
+                            return _buildChapterCard(data, index);
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Add new chapter
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const NewChapterScreen()),
+          );
         },
         backgroundColor: const Color(0xFF6C63FF),
         icon: const Icon(Icons.add, color: Colors.white),
@@ -180,6 +231,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(15),
           onTap: () {
             // Open chapter for editing
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NewChapterScreen(
+                  chapterData: chapter,
+                  chapterId: chapter['id'],
+                ),
+              ),
+            );
           },
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -217,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            chapter['title'],
+                            chapter['title'] ?? 'Untitled',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -226,7 +286,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            chapter['date'],
+                            _formatDate(chapter['createdAt']),
                             style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFF9E9E9E),
@@ -244,7 +304,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 15),
                 Text(
-                  chapter['preview'],
+                  chapter['enhancedText'] ?? chapter['rawText'] ?? '',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -254,10 +314,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 15),
-                // Progress bar
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Word count and attachments
+                Row(
                   children: [
+                    Icon(Icons.text_fields, size: 16, color: Color(0xFF6C63FF)),
+                    SizedBox(width: 5),
+                    Text(
+                      '${chapter['wordCount'] ?? 0} words',
+                      style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 12),
+                    ),
+                    if ((chapter['attachments'] as List?)?.isNotEmpty ?? false) ...[
+                      SizedBox(width: 15),
+                      Icon(Icons.image, size: 16, color: Color(0xFF6C63FF)),
+                      SizedBox(width: 5),
+                      Text(
+                        '${(chapter['attachments'] as List).length} images',
+                        style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 12),
+                      ),
+                    ],
+                  ],
+                ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -348,10 +424,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  int _getTotalWords() {
-    return chapters.fold(
-      0,
-      (sum, chapter) => sum + (chapter['wordCount'] as int),
-    );
+  String _formatDate(dynamic timestamp) {
+    if (timestamp == null) return 'Recently';
+    
+    try {
+      final DateTime date = (timestamp as Timestamp).toDate();
+      final now = DateTime.now();
+      final difference = now.difference(date);
+
+      if (difference.inDays == 0) {
+        return 'Today';
+      } else if (difference.inDays == 1) {
+        return 'Yesterday';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} days ago';
+      } else {
+        return DateFormat('MMM d, yyyy').format(date);
+      }
+    } catch (e) {
+      return 'Recently';
+    }
   }
 }
