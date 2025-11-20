@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'home_screen.dart';
 import '../utils/session_manager.dart';
 
@@ -47,21 +48,64 @@ class _SignupScreenState extends State<SignupScreen> {
         _isLoading = true;
       });
 
-      // Simulate signup process
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        // Create user with Firebase Authentication
+        final userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            );
 
-      // Save login session for new user
-      await SessionManager.saveLoginSession();
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Navigate to home screen
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        // Update user profile with display name
+        await userCredential.user?.updateDisplayName(
+          _nameController.text.trim(),
         );
+
+        // Save login session for new user
+        await SessionManager.saveLoginSession();
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Navigate to home screen
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        String errorMessage = 'An error occurred. Please try again.';
+        if (e.code == 'weak-password') {
+          errorMessage = 'The password provided is too weak.';
+        } else if (e.code == 'email-already-in-use') {
+          errorMessage = 'An account already exists for this email.';
+        } else if (e.code == 'invalid-email') {
+          errorMessage = 'Invalid email address.';
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+          );
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('An unexpected error occurred.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -103,7 +147,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6C63FF).withOpacity(0.3),
+                          color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
                           blurRadius: 20,
                           spreadRadius: 3,
                         ),
@@ -490,7 +534,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                         elevation: 5,
-                        shadowColor: const Color(0xFF6C63FF).withOpacity(0.5),
+                        shadowColor: const Color(
+                          0xFF6C63FF,
+                        ).withValues(alpha: 0.5),
                       ),
                       child: _isLoading
                           ? const SizedBox(

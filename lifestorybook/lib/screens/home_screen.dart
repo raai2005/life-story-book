@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,7 +19,9 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.account_circle, color: Colors.white),
             onPressed: () {
-              // Profile action
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
             },
           ),
         ],
@@ -46,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF6C63FF).withOpacity(0.4),
+                        color: const Color(0xFF6C63FF).withValues(alpha: 0.4),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
@@ -105,7 +108,7 @@ class HomeScreen extends StatelessWidget {
                     color: const Color(0xFF16213E),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                      color: const Color(0xFF6C63FF).withOpacity(0.3),
+                      color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -120,7 +123,9 @@ class HomeScreen extends StatelessWidget {
                           decoration: InputDecoration(
                             hintText: 'How can I help you today?',
                             hintStyle: TextStyle(
-                              color: const Color(0xFF9E9E9E).withOpacity(0.6),
+                              color: const Color(
+                                0xFF9E9E9E,
+                              ).withValues(alpha: 0.6),
                               fontSize: 16,
                             ),
                             border: InputBorder.none,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -32,7 +33,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           IconButton(
             icon: const Icon(Icons.account_circle, color: Colors.white),
             onPressed: () {
-              // Profile menu
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
             },
           ),
         ],
@@ -123,10 +126,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: const Color(0xFF6C63FF).withOpacity(0.15),
+          color: const Color(0xFF6C63FF).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF6C63FF).withOpacity(0.3),
+            color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -167,7 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         color: const Color(0xFF16213E),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: const Color(0xFF6C63FF).withOpacity(0.2),
+          color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -324,7 +327,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Icon(
             Icons.book_outlined,
             size: 100,
-            color: const Color(0xFF6C63FF).withOpacity(0.5),
+            color: const Color(0xFF6C63FF).withValues(alpha: 0.5),
           ),
           const SizedBox(height: 20),
           const Text(
