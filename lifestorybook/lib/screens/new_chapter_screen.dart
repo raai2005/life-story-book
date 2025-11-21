@@ -156,14 +156,21 @@ class _NewChapterScreenState extends State<NewChapterScreen> {
     });
 
     try {
-      // Enhance the story text with AI
-      final enhancedText = await AIService.enhanceStory(
-        _chapterController.text,
-      );
+      // Call both AI services in parallel for better performance
+      final results = await Future.wait([
+        AIService.enhanceStory(_chapterController.text),
+        AIService.generateTitle(_chapterController.text),
+      ]);
 
-      // TODO: Generate chapter title using AI
-      // For now using a placeholder
-      final suggestedTitle = 'Chapter ${DateTime.now().day}';
+      final enhancedText = results[0];
+      var suggestedTitle = results[1];
+
+      // Remove surrounding quotation marks from title if present
+      suggestedTitle = suggestedTitle.trim();
+      if ((suggestedTitle.startsWith('"') && suggestedTitle.endsWith('"')) ||
+          (suggestedTitle.startsWith("'") && suggestedTitle.endsWith("'"))) {
+        suggestedTitle = suggestedTitle.substring(1, suggestedTitle.length - 1);
+      }
 
       setState(() {
         _isEnhancing = false;

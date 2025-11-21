@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile_screen.dart';
 import 'new_chapter_screen.dart';
+import 'chapter_detail_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +16,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _totalChapters = 0;
   int _totalWords = 0;
+  int _totalImages = 0;
 
   Stream<QuerySnapshot> _getChaptersStream() {
     final user = FirebaseAuth.instance.currentUser;
@@ -78,9 +80,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Calculate totals
           _totalChapters = chapters.length;
           _totalWords = 0;
+          _totalImages = 0;
           for (var doc in chapters) {
             final data = doc.data() as Map<String, dynamic>;
             _totalWords += (data['wordCount'] as num?)?.toInt() ?? 0;
+            _totalImages += (data['attachments'] as List?)?.length ?? 0;
           }
 
           return SafeArea(
@@ -134,6 +138,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             'Words',
                             _totalWords.toString(),
                             Icons.text_fields,
+                          ),
+                          const SizedBox(width: 15),
+                          _buildStatCard(
+                            'Images',
+                            _totalImages.toString(),
+                            Icons.image,
                           ),
                         ],
                       ),
@@ -236,11 +246,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(15),
           onTap: () {
-            // Open chapter for editing
+            // Open chapter detail screen
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => NewChapterScreen(
+                builder: (context) => ChapterDetailScreen(
                   chapterData: chapter,
                   chapterId: chapter['id'],
                 ),
@@ -343,38 +353,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ],
                   ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Progress',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF9E9E9E),
-                      ),
-                    ),
-                    Text(
-                      '${((chapter['progress'] ?? 0.0) * 100).toInt()}%',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF6C63FF),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(5),
-                  child: LinearProgressIndicator(
-                    value: chapter['progress'] ?? 0.0,
-                    backgroundColor: const Color(0xFF1A1A2E),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF6C63FF),
-                    ),
-                    minHeight: 8,
-                  ),
                 ),
               ],
             ),

@@ -11,6 +11,78 @@ class AIService {
   static String get _model =>
       dotenv.env['OPENROUTER_MODEL'] ?? 'meta-llama/llama-3.1-8b-instruct';
 
+  /// Generates a meaningful title based on the user's story
+  ///
+  /// Takes the user's story text and returns a descriptive, engaging title
+  /// that captures the essence of the story (3-7 words)
+  static Future<String> generateTitle(String storyText) async {
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_apiKey',
+          'HTTP-Referer': 'https://lifestorybook.app',
+          'X-Title': 'Life Story Book',
+        },
+        body: jsonEncode({
+          'model': _model,
+          'messages': [
+            {
+              'role': 'system',
+              'content':
+                  '''You are an expert at creating compelling, meaningful titles for personal life stories and memoirs.
+
+Analyze the user's story and generate a descriptive, engaging title that captures the essence of their narrative.
+
+TITLE REQUIREMENTS:
+• Length: 3-7 words
+• Be specific and descriptive, not generic
+• Capture the key theme, emotion, or event
+• NEVER use: "Chapter 1", "Chapter 20", "Untitled", or any chapter numbers
+• Avoid clichés and overused phrases
+
+EXAMPLES OF GOOD TITLES:
+✅ "First Day Frenzy"
+✅ "A Chaotic Start"
+✅ "The Move to Mumbai"
+✅ "When Everything Changed"
+✅ "Learning to Let Go"
+✅ "Grandmother's Secret Recipe"
+
+EXAMPLES OF BAD TITLES:
+❌ "Chapter 1"
+❌ "My Story"
+❌ "Untitled"
+❌ "A Memory"
+
+OUTPUT:
+Return ONLY the title text, nothing else. No prefix, no explanation, just the title.''',
+            },
+            {'role': 'user', 'content': 'STORY TEXT:\n\n$storyText'},
+          ],
+          'temperature': 0.7,
+          'max_tokens': 50,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final title = data['choices'][0]['message']['content'] as String;
+        return title.trim();
+      } else {
+        throw AIServiceException(
+          'Failed to generate title: ${response.statusCode} - ${response.body}',
+        );
+      }
+    } catch (e) {
+      if (e is AIServiceException) {
+        rethrow;
+      }
+      throw AIServiceException('Error generating title: $e');
+    }
+  }
+
   /// Enhances the user's story text using AI
   ///
   /// Takes the raw user input and returns an enhanced, more engaging version
@@ -43,22 +115,13 @@ KEY TASKS:
 • Keep similar length (not extremely longer)
 • Structure into clear paragraphs
 
-TITLE REQUIREMENTS:
-Generate meaningful, descriptive titles (3-7 words). NEVER use:
-❌ "Chapter 1", "Chapter 20", "Untitled", or any numbers
-✅ Use: "First Day Frenzy", "A Chaotic Start", "The Move to Mumbai"
-
 DIALOGUE RULES:
 • Convert implied conversations to natural direct speech
 • Format: "..." I said. / "..." she replied.
 • Don't add unnatural dialogue if none exists
 
 OUTPUT:
-Suggested Title:
-<meaningful title>
-
-Enhanced Content:
-<polished story with natural flow and dialogue>''',
+Return ONLY the enhanced story content. Do not include any title or prefix, just the polished narrative text.''',
             },
             {'role': 'user', 'content': 'RAW USER TEXT:\n\n$userText'},
           ],
