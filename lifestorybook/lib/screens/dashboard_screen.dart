@@ -19,7 +19,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Stream<QuerySnapshot> _getChaptersStream() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return const Stream.empty();
-    
+
     return FirebaseFirestore.instance
         .collection('chapters')
         .where('userId', isEqualTo: user.uid)
@@ -74,7 +74,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
 
           final chapters = snapshot.data?.docs ?? [];
-          
+
           // Calculate totals
           _totalChapters = chapters.length;
           _totalWords = 0;
@@ -92,7 +92,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [const Color(0xFF16213E), const Color(0xFF1A1A2E)],
+                      colors: [
+                        const Color(0xFF16213E),
+                        const Color(0xFF1A1A2E),
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -112,7 +115,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 8),
                       const Text(
                         'Continue writing your life story',
-                        style: TextStyle(fontSize: 16, color: Color(0xFF9E9E9E)),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF9E9E9E),
+                        ),
                       ),
                       const SizedBox(height: 20),
                       // Stats row
@@ -323,69 +329,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       '${chapter['wordCount'] ?? 0} words',
                       style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 12),
                     ),
-                    if ((chapter['attachments'] as List?)?.isNotEmpty ?? false) ...[
+                    if ((chapter['attachments'] as List?)?.isNotEmpty ??
+                        false) ...[
                       SizedBox(width: 15),
                       Icon(Icons.image, size: 16, color: Color(0xFF6C63FF)),
                       SizedBox(width: 5),
                       Text(
                         '${(chapter['attachments'] as List).length} images',
-                        style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 12),
+                        style: TextStyle(
+                          color: Color(0xFF9E9E9E),
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ],
                 ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Progress',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF9E9E9E),
-                          ),
-                        ),
-                        Text(
-                          '${(chapter['progress'] * 100).toInt()}%',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF6C63FF),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(5),
-                      child: LinearProgressIndicator(
-                        value: chapter['progress'],
-                        backgroundColor: const Color(0xFF1A1A2E),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF6C63FF),
-                        ),
-                        minHeight: 8,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // Word count
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      Icons.text_fields,
-                      color: Color(0xFF9E9E9E),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 5),
                     Text(
-                      '${chapter['wordCount']} words',
+                      'Progress',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF9E9E9E),
                       ),
                     ),
+                    Text(
+                      '${((chapter['progress'] ?? 0.0) * 100).toInt()}%',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6C63FF),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: LinearProgressIndicator(
+                    value: chapter['progress'] ?? 0.0,
+                    backgroundColor: const Color(0xFF1A1A2E),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color(0xFF6C63FF),
+                    ),
+                    minHeight: 8,
+                  ),
                 ),
               ],
             ),
@@ -426,7 +415,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   String _formatDate(dynamic timestamp) {
     if (timestamp == null) return 'Recently';
-    
+
     try {
       final DateTime date = (timestamp as Timestamp).toDate();
       final now = DateTime.now();

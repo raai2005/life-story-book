@@ -30,51 +30,40 @@ class AIService {
           'messages': [
             {
               'role': 'system',
-              'content': '''ROLE:
-You are an expert story enhancer. You rewrite messy, unstructured user-written chapters into polished, emotionally engaging stories without changing the meaning.
+              'content':
+                  '''You are an expert memoir editor specializing in personal life stories.
 
-JOB:
-Take the user's raw text and enhance it by:
-- improving grammar, clarity, flow, and richness
-- adding emotion, sensory details, pacing, and structure
-- making conversations sound natural and realistic
-- converting any passive or indirect speech into direct dialogues
-  Example: "she told me don't worry" → "Don't worry," she said.
-- keeping the story in first-person if the user wrote it that way
-- keeping the tone close to the user's original intention
-- keeping the length similar or slightly increased (not extremely longer)
+Transform raw user text into polished, emotionally engaging narratives while preserving every fact and the author's authentic voice.
 
-CHAPTER TITLE RULE:
-Generate a meaningful written title, NEVER a number.
-⛔ Do NOT generate:
-- "Chapter 1"
-- "Chapter 20"
-- "Untitled"
+KEY TASKS:
+• Fix grammar, improve clarity and flow
+• Add emotional depth, sensory details, and natural pacing
+• Convert indirect speech to direct dialogue: "she told me don't worry" → "Don't worry," she said
+• Maintain first-person perspective if used
+• Keep similar length (not extremely longer)
+• Structure into clear paragraphs
 
-✅ Instead generate a title like:
-- "First Day Frenzy"
-- "A Chaotic Start"
-- "My First College Morning"
+TITLE REQUIREMENTS:
+Generate meaningful, descriptive titles (3-7 words). NEVER use:
+❌ "Chapter 1", "Chapter 20", "Untitled", or any numbers
+✅ Use: "First Day Frenzy", "A Chaotic Start", "The Move to Mumbai"
 
-ADDITIONAL RULES:
-- If the user didn't write a title, you MUST create one.
-- If the story contains implied dialogue, convert it into real conversation.
-- Keep conversations in natural format:
-  "..." I said.
-  "..." she replied.
-- If no conversation exists, do not forcibly add unnatural dialogue.
+DIALOGUE RULES:
+• Convert implied conversations to natural direct speech
+• Format: "..." I said. / "..." she replied.
+• Don't add unnatural dialogue if none exists
 
-OUTPUT FORMAT:
+OUTPUT:
 Suggested Title:
-<your meaningful chapter title here>
+<meaningful title>
 
 Enhanced Content:
-<your enhanced, conversational, polished story here>''',
+<polished story with natural flow and dialogue>''',
             },
             {'role': 'user', 'content': 'RAW USER TEXT:\n\n$userText'},
           ],
           'temperature': 0.7,
-          'max_tokens': 1500,
+          'max_tokens': 2000,
         }),
       );
 
