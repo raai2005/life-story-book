@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'profile_screen.dart';
-import 'new_chapter_screen.dart';
 import 'chapter_detail_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,30 +31,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A2E),
-      appBar: AppBar(
-        title: const Text(
-          'My Story',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: const Color(0xFF16213E),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // Search functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_circle, color: Colors.white),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
-            },
-          ),
-        ],
-      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _getChaptersStream(),
         builder: (context, snapshot) {
@@ -170,20 +144,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const NewChapterScreen()),
-          );
-        },
-        backgroundColor: const Color(0xFF6C63FF),
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'New Chapter',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
       ),
     );
   }

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'login_screen.dart';
-import 'dashboard_screen.dart';
+
+import 'main_navigation_screen.dart';
 import '../utils/session_manager.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -40,8 +41,9 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) =>
-                shouldLogin ? const LoginScreen() : const DashboardScreen(),
+            builder: (context) => shouldLogin
+                ? const LoginScreen()
+                : const MainNavigationScreen(),
           ),
         );
       }

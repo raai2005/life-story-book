@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home_screen.dart';
+
+import 'main_navigation_screen.dart';
 import '../utils/session_manager.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -71,7 +72,9 @@ class _SignupScreenState extends State<SignupScreen> {
         // Navigate to home screen
         if (mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(
+              builder: (context) => const MainNavigationScreen(),
+            ),
           );
         }
       } on FirebaseAuthException catch (e) {
